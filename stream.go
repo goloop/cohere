@@ -60,6 +60,16 @@ func (c *Client) Stream(
 
 		var usage ai.Usage
 		tools := map[int]*toolAcc{}
+		var order []int
+
+		emit := func(acc *toolAcc, raw json.RawMessage) bool {
+			args := acc.args
+			if len(args) == 0 {
+				args = []byte("{}")
+			}
+			call := ai.ToolUse{ID: acc.id, Name: acc.name, Input: json.RawMessage(args)}
+			return yield(ai.Chunk{ToolCall: &call, Raw: raw}, nil)
+		}
 
 		for data, err := range ai.SSEEvents(resp.Body) {
 			if err != nil {
@@ -78,6 +88,9 @@ func (c *Client) Stream(
 					}
 				}
 			case "tool-call-start":
+				if _, ok := tools[ev.Index]; !ok {
+					order = append(order, ev.Index)
+				}
 				tools[ev.Index] = &toolAcc{
 					id:   ev.Delta.Message.ToolCalls.ID,
 					name: ev.Delta.Message.ToolCalls.Function.Name,
@@ -89,14 +102,8 @@ func (c *Client) Stream(
 				}
 			case "tool-call-end":
 				if acc := tools[ev.Index]; acc != nil {
-					args := acc.args
-					if len(args) == 0 {
-						args = []byte("{}")
-					}
-					call := ai.ToolUse{
-						ID: acc.id, Name: acc.name, Input: json.RawMessage(args),
-					}
-					if !yield(ai.Chunk{ToolCall: &call, Raw: json.RawMessage(data)}, nil) {
+					delete(tools, ev.Index)
+					if !emit(acc, json.RawMessage(data)) {
 						return
 					}
 				}
@@ -107,6 +114,17 @@ func (c *Client) Stream(
 				}
 			}
 		}
+
+		// Flush any tool calls the stream did not close with tool-call-end
+		// (truncated streams), in the order they started.
+		for _, idx := range order {
+			if acc := tools[idx]; acc != nil {
+				if !emit(acc, nil) {
+					return
+				}
+			}
+		}
+
 		final := usage
 		yield(ai.Chunk{Done: true, Usage: &final}, nil)
 	}
@@ -144,8 +162,9 @@ func (c *Client) ChatStream(
 
 // openStream opens the streaming /v2/chat connection.
 func (c *Client) openStream(ctx context.Context, req *ChatRequest) (*http.Response, error) {
-	req.Stream = true
-	body, err := json.Marshal(req)
+	r := *req // do not mutate the caller's request
+	r.Stream = true
+	body, err := json.Marshal(&r)
 	if err != nil {
 		return nil, err
 	}
