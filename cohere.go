@@ -12,6 +12,7 @@ const (
 	ModelCommandRPlus = "command-r-plus-08-2024"
 	ModelCommandR     = "command-r-08-2024"
 	ModelEmbedV3      = "embed-english-v3.0"
+	ModelRerankV35    = "rerank-v3.5"
 )
 
 // Client is a Cohere API client. It implements [ai.Client] and adds the

@@ -13,7 +13,7 @@ AI provider, and exposes Cohere's native v2 endpoints on top.
   through `iter.Seq2`.
 - Tool use (function calling), multimodal image input and system prompts.
 - Native `ChatCompletion` and `ChatStream` over the v2 chat API.
-- Embeddings and model listing.
+- Embeddings, reranking and model listing.
 - Retries on 429 and 5xx with backoff; normalized, typed API errors.
 - Depends only on `github.com/goloop/ai` and the standard library.
 
@@ -70,6 +70,21 @@ docs, err := c.Embed(ctx, cohere.ModelEmbedV3, "hello", "world")
 q, err := c.Embeddings(ctx, &cohere.EmbedRequest{
 	Model: cohere.ModelEmbedV3, Texts: []string{"hello"}, InputType: "search_query",
 })
+```
+
+## Rerank
+
+Rerank scores each document against the query and returns them ordered most
+relevant first. Each result's `Index` points back into the request documents.
+
+```go
+res, err := c.Rerank(ctx, &cohere.RerankRequest{
+	Model:     cohere.ModelRerankV35,
+	Query:     "What is the capital of Ukraine?",
+	Documents: []string{"Kyiv is the capital.", "Bananas are yellow."},
+	TopN:      1,
+})
+// res[0].Index == 0, res[0].RelevanceScore near 1.0
 ```
 
 ## Documentation

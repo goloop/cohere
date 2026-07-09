@@ -14,6 +14,8 @@ Initial release, built on the `github.com/goloop/ai` interface.
   v2 chat API, with tool use, multimodal image input and system prompts.
 - Native `ChatCompletion` and `ChatStream` (typed Server-Sent Events).
 - Embeddings (`Embeddings`, `Embed`) and models (`Models`, `GetModel`).
+- Rerank (`Rerank`): score documents against a query, ordered most relevant
+  first.
 - Functional options: `WithBaseURL`, `WithHTTPClient`, `WithTimeout`,
   `WithMaxRetries`, `WithHeader`.
 - Retries on 429 and 5xx with backoff; normalized `*ai.APIError` errors.
