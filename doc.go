@@ -3,9 +3,9 @@
 //
 // The Client implements ai.Client, so Generate and Stream work the same as
 // with any other goloop AI provider. On top of that it exposes Cohere's native
-// v2 endpoints: chat (with tool use and image input), embeddings and model
-// listing. Streaming uses Server-Sent Events with typed events; the driver
-// hides that.
+// v2 endpoints: chat (with tool use and image input), embeddings, reranking
+// and model listing. Streaming uses Server-Sent Events with typed events; the
+// driver hides that.
 //
 //	c := cohere.New(os.Getenv("COHERE_API_KEY"))
 //	resp, err := c.Generate(ctx, &ai.Request{

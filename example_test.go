@@ -28,6 +28,19 @@ func ExampleClient_Generate() {
 	// Output: command-a-03-2025 1
 }
 
+// ExampleClient_Rerank shows a rerank request shape. Rerank scores each
+// document against the query and returns them ordered most relevant first.
+func ExampleClient_Rerank() {
+	req := &cohere.RerankRequest{
+		Model:     cohere.ModelRerankV35,
+		Query:     "What is the capital of Ukraine?",
+		Documents: []string{"Kyiv is the capital.", "Bananas are yellow."},
+		TopN:      1,
+	}
+	fmt.Println(req.Model, len(req.Documents))
+	// Output: rerank-v3.5 2
+}
+
 // ExampleTool shows a tool definition passed with a request.
 func ExampleTool() {
 	tool := ai.Tool{
