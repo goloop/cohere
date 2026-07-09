@@ -7,6 +7,7 @@
 package cohere_test
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"os"
@@ -16,7 +17,7 @@ import (
 	"github.com/goloop/cohere"
 )
 
-const integrationModel = cohere.ModelCommandR
+var integrationModel = cmp.Or(os.Getenv("COHERE_MODEL"), cohere.ModelCommandR)
 
 func integrationClient(t *testing.T) *cohere.Client {
 	t.Helper()
