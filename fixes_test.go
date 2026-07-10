@@ -17,7 +17,8 @@ func TestFixStreamToolCallWithoutEnd(t *testing.T) {
 			`{"id":"call_1","type":"function","function":{"name":"lookup","arguments":""}}}}}`, ``,
 		`data: {"type":"tool-call-delta","index":0,"delta":{"message":{"tool_calls":` +
 			`{"function":{"arguments":"{\"q\":42}"}}}}}`, ``,
-		// no tool-call-end, stream just ends
+		// no tool-call-end, but the stream still completes with message-end
+		`data: {"type":"message-end","delta":{"usage":{"tokens":{"input_tokens":1,"output_tokens":1}}}}`, ``,
 	}
 	c, done := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		for _, line := range events {
@@ -51,6 +52,7 @@ func TestFixStreamToolCallNoDuplicate(t *testing.T) {
 		`data: {"type":"tool-call-delta","index":0,"delta":{"message":{"tool_calls":` +
 			`{"function":{"arguments":"{}"}}}}}`, ``,
 		`data: {"type":"tool-call-end","index":0}`, ``,
+		`data: {"type":"message-end","delta":{"usage":{"tokens":{"input_tokens":1,"output_tokens":1}}}}`, ``,
 	}
 	c, done := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		for _, line := range events {

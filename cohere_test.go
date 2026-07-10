@@ -130,6 +130,7 @@ func TestStreamToolCall(t *testing.T) {
 		`data: {"type":"tool-call-delta","index":0,"delta":{"message":{"tool_calls":` +
 			`{"function":{"arguments":"{\"q\":42}"}}}}}`, ``,
 		`data: {"type":"tool-call-end","index":0}`, ``,
+		`data: {"type":"message-end","delta":{"usage":{"tokens":{"input_tokens":1,"output_tokens":1}}}}`, ``,
 	}
 	c, done := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		for _, line := range events {

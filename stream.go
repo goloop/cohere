@@ -59,6 +59,7 @@ func (c *Client) Stream(
 		defer resp.Body.Close()
 
 		var usage ai.Usage
+		var sawEnd bool
 		tools := map[int]*toolAcc{}
 		var order []int
 
@@ -108,6 +109,7 @@ func (c *Client) Stream(
 					}
 				}
 			case "message-end":
+				sawEnd = true
 				usage = ai.Usage{
 					InputTokens:  int(ev.Delta.Usage.Tokens.InputTokens),
 					OutputTokens: int(ev.Delta.Usage.Tokens.OutputTokens),
@@ -115,14 +117,22 @@ func (c *Client) Stream(
 			}
 		}
 
-		// Flush any tool calls the stream did not close with tool-call-end
-		// (truncated streams), in the order they started.
+		// Best-effort: flush any tool calls that started but were not closed
+		// with a tool-call-end, in the order they started.
 		for _, idx := range order {
 			if acc := tools[idx]; acc != nil {
 				if !emit(acc, nil) {
 					return
 				}
 			}
+		}
+
+		// A missing message-end means the stream was truncated. Surface it
+		// after any salvaged chunks so the caller does not treat a cut-off
+		// response as complete (salvaged tool arguments may be incomplete).
+		if !sawEnd {
+			yield(ai.Chunk{}, io.ErrUnexpectedEOF)
+			return
 		}
 
 		final := usage

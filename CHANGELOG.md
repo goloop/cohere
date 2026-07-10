@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-10
+
+### Fixed
+- A stream cut off before the `message-end` event now surfaces
+  `io.ErrUnexpectedEOF` (after best-effort salvaging any partial tool call)
+  instead of silently reporting a completed response.
+
+### Changed
+- Require `goloop/ai` v0.2.0 (500 no longer retried; jittered backoff).
+
 ## [0.1.0] - 2026-07-09
 
 Initial release, built on the `github.com/goloop/ai` interface.
