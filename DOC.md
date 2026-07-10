@@ -69,6 +69,10 @@ for chunk, err := range c.Stream(ctx, req) {
 }
 ```
 
+If the stream is cut off before its `message-end` event, `Stream` yields
+`io.ErrUnexpectedEOF` (after salvaging any partial tool call) rather than
+silently reporting a completed response.
+
 ## Native chat
 
 For provider-only options build a `ChatRequest` and call `ChatCompletion` or
