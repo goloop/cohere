@@ -13,5 +13,12 @@
 //	    Messages: []ai.Message{ai.UserText("Say hello in one word.")},
 //	})
 //
+// # Structured output
+//
+// ai.Request.Format maps onto the provider's response_format, so a request for
+// JSON is enforced rather than merely asked for, and ai.Response.JSON decodes
+// the reply. ai.FormatJSONSchema sends the schema inside that same object,
+// which is the shape this provider expects.
+//
 // It depends only on goloop/ai and the standard library.
 package cohere
