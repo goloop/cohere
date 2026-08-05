@@ -16,6 +16,8 @@ AI provider, and exposes Cohere's native v2 endpoints on top.
 - Embeddings, reranking and model listing.
 - Retries on 429 and 5xx with backoff; normalized, typed API errors.
 - Depends only on `github.com/goloop/ai` and the standard library.
+- Structured output: `ai.Format` maps onto the provider's `response_format`
+  (JSON mode or a schema); read the reply with `resp.JSON(&v)`.
 
 ## Installation
 

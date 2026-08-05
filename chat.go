@@ -51,6 +51,7 @@ func (c *Client) Generate(ctx context.Context, req *ai.Request) (*ai.Response, e
 	}
 	resp := cohereToResponse(out, raw)
 	resp.Model = req.Model
+	resp.Format = formatMode(req.Format)
 	return resp, nil
 }
 
@@ -91,7 +92,46 @@ func (c *Client) chatRequest(req *ai.Request, stream bool) (*ChatRequest, error)
 			cr.ToolChoice = "NONE"
 		}
 	}
+
+	format, err := responseFormat(req.Format)
+	if err != nil {
+		return nil, err
+	}
+	cr.ResponseFormat = format
 	return cr, nil
+}
+
+// responseFormat renders an [ai.Format] as this provider's response_format
+// value, which carries the schema inside the same object rather than in a
+// nested one. It returns nil when nothing was asked for.
+func responseFormat(f *ai.Format) (json.RawMessage, error) {
+	if f == nil || f.Type == ai.FormatText {
+		return nil, nil
+	}
+
+	switch f.Type {
+	case ai.FormatJSON:
+		return json.RawMessage(`{"type":"json_object"}`), nil
+	case ai.FormatJSONSchema:
+		var body struct {
+			Type   string          `json:"type"`
+			Schema json.RawMessage `json:"json_schema"`
+		}
+		body.Type = "json_object"
+		body.Schema = f.Schema
+		return json.Marshal(body)
+	default:
+		return nil, ai.ErrBadFormat
+	}
+}
+
+// formatMode reports how the request's format was satisfied. Both shapes this
+// driver accepts are enforced by the provider itself.
+func formatMode(f *ai.Format) ai.FormatMode {
+	if f == nil || f.Type == ai.FormatText {
+		return ai.FormatNone
+	}
+	return ai.FormatNative
 }
 
 func chatMessages(req *ai.Request) []ChatMessage {

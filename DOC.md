@@ -10,6 +10,7 @@ Ukrainian version: **[DOC.UK.md](DOC.UK.md)**.
 - [Mental model](#mental-model)
 - [Creating a client](#creating-a-client)
 - [Generate and Stream](#generate-and-stream)
+- [Structured output](#structured-output)
 - [Native chat](#native-chat)
 - [Tools, images and system prompts](#tools-images-and-system-prompts)
 - [Embeddings](#embeddings)
@@ -72,6 +73,36 @@ for chunk, err := range c.Stream(ctx, req) {
 If the stream is cut off before its `message-end` event, `Stream` yields
 `io.ErrUnexpectedEOF` (after salvaging any partial tool call) rather than
 silently reporting a completed response.
+
+## Structured output
+
+`ai.Request.Format` maps onto the provider's own `response_format`, so a request for JSON
+is enforced by the provider rather than merely asked for:
+
+```go
+resp, err := c.Generate(ctx, &ai.Request{
+	Model:    "the-model",
+	Messages: []ai.Message{ai.UserText("Draft SEO fields for this article.")},
+	Format: &ai.Format{
+		Type:   ai.FormatJSONSchema,
+		Name:   "seo",
+		Schema: schema,
+	},
+})
+
+var seo SEO
+err = resp.JSON(&seo)
+```
+
+`ai.FormatJSON` goes out as `{"type":"json_object"}`; `ai.FormatJSONSchema`
+sends the schema inside that same object, as `json_schema`, which is the shape
+this provider expects.
+
+
+`ai.Response.Format` is `ai.FormatNative`: this provider enforces every shape
+it accepts. Which models support schema mode is the provider's business - there
+is no capability table here, so an unsupported pairing is reported by the
+provider itself.
 
 ## Native chat
 
