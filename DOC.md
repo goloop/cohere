@@ -11,6 +11,7 @@ Ukrainian version: **[DOC.UK.md](DOC.UK.md)**.
 - [Creating a client](#creating-a-client)
 - [Generate and Stream](#generate-and-stream)
 - [Structured output](#structured-output)
+- [Hosted web search](#hosted-web-search)
 - [Native chat](#native-chat)
 - [Tools, images and system prompts](#tools-images-and-system-prompts)
 - [Embeddings](#embeddings)
@@ -146,6 +147,21 @@ models, err := c.Models(ctx)
 m, err := c.GetModel(ctx, cohere.ModelCommandA)
 m.Endpoints // e.g. ["chat"]
 ```
+
+## Hosted web search
+
+`ai.Request.Hosted` is answered with `ai.ErrNoHosted` before the request
+leaves.
+
+This provider's search is orchestration around tools you supply, which is what
+`ai.Request.Tools` already expresses. Nothing runs on the provider's own side,
+so mapping `Hosted` onto it would hand back a `ToolUse` you have to answer -
+the one thing `Hosted` promises never to do.
+
+The refusal is the documented behavior, not a gap left in silence: an answer
+produced without the search that was asked for looks exactly like one produced
+with it, so failing loudly is the only way you can tell them apart. If you would
+rather have the answer anyway, ask again without `Hosted`.
 
 ## Options and errors
 

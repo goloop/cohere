@@ -8,7 +8,6 @@
 AI provider, and exposes Cohere's native v2 endpoints on top.
 
 ## Features
-
 - Chat: `Generate` for a single response, `Stream` for token-by-token output
   through `iter.Seq2`.
 - Tool use (function calling), multimodal image input and system prompts.
@@ -18,6 +17,8 @@ AI provider, and exposes Cohere's native v2 endpoints on top.
 - Depends only on `github.com/goloop/ai` and the standard library.
 - Structured output: `ai.Format` maps onto the provider's `response_format`
   (JSON mode or a schema); read the reply with `resp.JSON(&v)`.
+- Hosted capabilities: `ai.Request.Hosted` is refused with `ai.ErrNoHosted`,
+  because nothing here runs on the provider's own side.
 
 ## Installation
 
