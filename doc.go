@@ -20,5 +20,16 @@
 // the reply. ai.FormatJSONSchema sends the schema inside that same object,
 // which is the shape this provider expects.
 //
+// # Hosted capabilities
+//
+// This provider's search is orchestration around tools the caller supplies,
+// which ai.Request.Tools already expresses; nothing runs on the provider's
+// own side. ai.Hosted is refused with ai.ErrNoHosted.
+//
+// The refusal is the documented behavior, not a gap waiting to be filled
+// in silence: an answer produced without the search that was asked for
+// looks exactly like one produced with it. A caller who would rather have
+// the answer anyway asks again without ai.Request.Hosted.
+//
 // It depends only on goloop/ai and the standard library.
 package cohere
