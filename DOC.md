@@ -73,8 +73,10 @@ for chunk, err := range c.Stream(ctx, req) {
 ```
 
 If the stream is cut off before its `message-end` event, `Stream` yields
-`io.ErrUnexpectedEOF` (after salvaging any partial tool call) rather than
-silently reporting a completed response.
+`io.ErrUnexpectedEOF` rather than silently reporting a completed response. A
+tool call the stream left open is not handed out, since its arguments may be
+cut off too; one that got its `tool-call-end` is. An event that is not valid
+JSON, or tool arguments that are not, end the stream with an error as well.
 
 ## Structured output
 

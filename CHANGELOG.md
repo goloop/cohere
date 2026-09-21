@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.3] - 2026-08-15
+## [1.1.4] - 2026-09-21
+
+Patch release.
+
+### Fixed
+- `Stream` no longer hands out the tool calls a cut-off stream left open. A
+  stream that ended before `message-end` was already reported as
+  `io.ErrUnexpectedEOF`, but only after the open tool calls had been yielded
+  with whatever arguments had arrived, so a tool loop that runs the first call
+  and stops would act on an action the model never finished and never see the
+  error. The error now comes first and no open call is handed out; a call
+  that got its `tool-call-end` is still delivered.
+- `Stream` reports a tool call whose arguments are not valid JSON as an error
+  instead of handing out an `Input` that cannot be decoded.
+- `Stream` reports an event that is not valid JSON as an error instead of
+  skipping it, which could quietly drop part of the answer.
+
+### Changed
+- Depends on `ai` v1.2.1, whose `SSEEvents` bounds the size of one event, so a
+  stream that never ends an event cannot make the reader grow without limit.
+
 
 Patch release.
 

@@ -3,6 +3,7 @@ package cohere
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"iter"
 	"net/http"
@@ -68,6 +69,11 @@ func (c *Client) Stream(
 			if len(args) == 0 {
 				args = []byte("{}")
 			}
+			if !json.Valid(args) {
+				yield(ai.Chunk{}, fmt.Errorf(
+					"cohere: tool call %q has invalid JSON arguments", acc.name))
+				return false
+			}
 			call := ai.ToolUse{ID: acc.id, Name: acc.name, Input: json.RawMessage(args)}
 			return yield(ai.Chunk{ToolCall: &call, Raw: raw}, nil)
 		}
@@ -78,8 +84,11 @@ func (c *Client) Stream(
 				return
 			}
 			var ev StreamEvent
-			if json.Unmarshal([]byte(data), &ev) != nil {
-				continue
+			if e := json.Unmarshal([]byte(data), &ev); e != nil {
+				// A broken event is a broken stream: skipping it would
+				// quietly drop part of the answer.
+				yield(ai.Chunk{}, e)
+				return
 			}
 			switch ev.Type {
 			case "content-delta":
@@ -117,22 +126,23 @@ func (c *Client) Stream(
 			}
 		}
 
-		// Best-effort: flush any tool calls that started but were not closed
-		// with a tool-call-end, in the order they started.
+		// A missing message-end means the stream was truncated. The tool
+		// calls it left open are not handed out: their arguments may be cut
+		// off too, and a tool loop must not run an action the model never
+		// finished. The error comes before anything a consumer could act on.
+		if !sawEnd {
+			yield(ai.Chunk{}, io.ErrUnexpectedEOF)
+			return
+		}
+
+		// The message ended properly; flush any tool call it started but
+		// did not close with a tool-call-end, in the order they started.
 		for _, idx := range order {
 			if acc := tools[idx]; acc != nil {
 				if !emit(acc, nil) {
 					return
 				}
 			}
-		}
-
-		// A missing message-end means the stream was truncated. Surface it
-		// after any salvaged chunks so the caller does not treat a cut-off
-		// response as complete (salvaged tool arguments may be incomplete).
-		if !sawEnd {
-			yield(ai.Chunk{}, io.ErrUnexpectedEOF)
-			return
 		}
 
 		final := usage
