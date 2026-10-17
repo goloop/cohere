@@ -194,3 +194,7 @@ if errors.As(err, &apiErr) && apiErr.Status == http.StatusTooManyRequests {
 
 Запити без моделі чи повідомлень падають до мережі з `ai.ErrNoModel` або
 `ai.ErrNoMessages`.
+
+## Реліз v1.1.5
+
+Embeddings не змінює переданий запит. Nil-запити chat, stream та embeddings повертають ai.ErrNoRequest. ChatStream завершується з помилкою на пошкодженому JSON.

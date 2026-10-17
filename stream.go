@@ -170,8 +170,9 @@ func (c *Client) ChatStream(
 				return
 			}
 			var ev StreamEvent
-			if json.Unmarshal([]byte(data), &ev) != nil {
-				continue
+			if err := json.Unmarshal([]byte(data), &ev); err != nil {
+				yield(StreamEvent{}, err)
+				return
 			}
 			if !yield(ev, nil) {
 				return
@@ -182,6 +183,9 @@ func (c *Client) ChatStream(
 
 // openStream opens the streaming /v2/chat connection.
 func (c *Client) openStream(ctx context.Context, req *ChatRequest) (*http.Response, error) {
+	if req == nil {
+		return nil, ai.ErrNoRequest
+	}
 	r := *req // do not mutate the caller's request
 	r.Stream = true
 	body, err := json.Marshal(&r)

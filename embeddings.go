@@ -1,6 +1,9 @@
 package cohere
 
-import "context"
+import (
+	"context"
+	"github.com/goloop/ai"
+)
 
 // EmbedRequest is the native v2 embed request.
 type EmbedRequest struct {
@@ -15,15 +18,19 @@ func (c *Client) Embeddings(
 	ctx context.Context,
 	req *EmbedRequest,
 ) ([][]float64, error) {
-	if len(req.EmbeddingTypes) == 0 {
-		req.EmbeddingTypes = []string{"float"}
+	if req == nil {
+		return nil, ai.ErrNoRequest
+	}
+	r := *req
+	if len(r.EmbeddingTypes) == 0 {
+		r.EmbeddingTypes = []string{"float"}
 	}
 	var out struct {
 		Embeddings struct {
 			Float [][]float64 `json:"float"`
 		} `json:"embeddings"`
 	}
-	if err := c.postJSON(ctx, "/v2/embed", req, &out); err != nil {
+	if err := c.postJSON(ctx, "/v2/embed", &r, &out); err != nil {
 		return nil, err
 	}
 	return out.Embeddings.Float, nil
