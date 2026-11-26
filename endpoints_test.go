@@ -28,6 +28,7 @@ func TestChatStreamNative(t *testing.T) {
 	events := []string{
 		`data: {"type":"content-delta","index":0,"delta":{"message":{"content":{"text":"a"}}}}`, ``,
 		`data: {"type":"content-delta","index":0,"delta":{"message":{"content":{"text":"b"}}}}`, ``,
+		`data: {"type":"message-end"}`, ``,
 	}
 	c, done := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		for _, line := range events {

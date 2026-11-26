@@ -174,10 +174,11 @@ func (c *Client) ChatStream(
 				yield(StreamEvent{}, err)
 				return
 			}
-			if !yield(ev, nil) {
+			if !yield(ev, nil) || ev.Type == "message-end" {
 				return
 			}
 		}
+		yield(StreamEvent{}, io.ErrUnexpectedEOF)
 	}
 }
 
@@ -194,13 +195,16 @@ func (c *Client) openStream(ctx context.Context, req *ChatRequest) (*http.Respon
 	}
 	h := c.headers()
 	h.Set("accept", "text/event-stream")
-	resp, err := c.opts.Do(ctx, http.MethodPost, c.opts.BaseURL+"/v2/chat", body, h)
+	resp, err := c.opts.DoStream(ctx, http.MethodPost, c.opts.BaseURL+"/v2/chat", body, h)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		data, _ := io.ReadAll(resp.Body)
+		data, readErr := ai.ReadResponse(resp.Body)
 		resp.Body.Close()
+		if readErr != nil {
+			return nil, readErr
+		}
 		return nil, parseError(resp.StatusCode, data)
 	}
 	return resp, nil
