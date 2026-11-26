@@ -201,3 +201,7 @@ Requests missing a model or messages fail before the network with
 ## Release v1.1.5
 
 Keep embedding requests unchanged, reject nil requests, and report malformed stream events.
+
+## Request behavior
+
+`Rerank` requires a non-nil request. For semantic search use `Embeddings` with `search_query` for queries and `search_document` for stored documents.

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Keep long responses streaming and check completion data.
 
+Reject missing rerank requests.
+
 ## [1.1.5] - 2026-10-18
 
 Keep embedding requests unchanged, reject nil requests, and report malformed stream events.

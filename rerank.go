@@ -1,6 +1,10 @@
 package cohere
 
-import "context"
+import (
+	"context"
+
+	"github.com/goloop/ai"
+)
 
 // RerankRequest is the native v2 rerank request. Rerank scores each document by
 // its relevance to the query and returns them ordered most relevant first.
@@ -24,6 +28,9 @@ func (c *Client) Rerank(
 	ctx context.Context,
 	req *RerankRequest,
 ) ([]RerankResult, error) {
+	if req == nil {
+		return nil, ai.ErrNoRequest
+	}
 	var out struct {
 		Results []RerankResult `json:"results"`
 	}

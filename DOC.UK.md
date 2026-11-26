@@ -198,3 +198,7 @@ if errors.As(err, &apiErr) && apiErr.Status == http.StatusTooManyRequests {
 ## Реліз v1.1.5
 
 Embeddings не змінює переданий запит. Nil-запити chat, stream та embeddings повертають ai.ErrNoRequest. ChatStream завершується з помилкою на пошкодженому JSON.
+
+## Поведінка запиту
+
+`Rerank` вимагає запит. Для пошуку через `Embeddings` задайте `search_query` для запитів і `search_document` для документів.

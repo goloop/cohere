@@ -3,6 +3,7 @@ package cohere
 import (
 	"context"
 	"encoding/json"
+	"github.com/goloop/ai"
 	"io"
 	"net/http"
 	"testing"
@@ -50,5 +51,15 @@ func TestRerankError(t *testing.T) {
 	_, err := c.Rerank(context.Background(), &RerankRequest{Model: "m", Query: "x"})
 	if err == nil {
 		t.Fatal("want error")
+	}
+}
+
+func TestRerankRejectsNilRequest(t *testing.T) {
+	c, done := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		t.Error("nil rerank request reached the server")
+	})
+	defer done()
+	if _, err := c.Rerank(context.Background(), nil); err != ai.ErrNoRequest {
+		t.Fatalf("Rerank error = %v", err)
 	}
 }
